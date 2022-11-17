@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"strings"
 )
 
 var (
@@ -39,6 +40,20 @@ func (w *WkteamApi) GetInfoByWId(wId string) (data map[string]interface{}, err e
 	return resMap.(map[string]interface{}), nil
 }
 
+func (w *WkteamApi) SetMsgReciverUrl(url string) error {
+	requestMap := map[string]interface{}{
+		"httpUrl": url,
+		"type":    2, // 这里指定使用优化版协议
+	}
+
+	_, err := w.doRequest("/setHttpCallbackUrl", requestMap)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (w *WkteamApi) SecondLogin(wId string) (data map[string]interface{}, err error) {
 	requestMap := map[string]interface{}{
 		"wId": wId,
@@ -63,16 +78,21 @@ func (w *WkteamApi) GetAddressList(wId string) (data map[string]interface{}, err
 	return resMap.(map[string]interface{}), err
 }
 
-func (w *WkteamApi) GetContact(wId string, wcId string) (data map[string]interface{}, err error) {
+func (w *WkteamApi) GetContact(wId string, wcIds []string) (data map[string]interface{}, err error) {
 	requestMap := map[string]interface{}{
 		"wId":  wId,
-		"wcId": wcId,
+		"wcId": strings.Join(wcIds, ","),
 	}
 	resMap, err := w.doRequest("/getContact", requestMap)
 	if err != nil {
 		return nil, err
 	}
-	return resMap.([]interface{})[0].(map[string]interface{}), err
+
+	contactMap := make(map[string]interface{})
+	for _, v := range resMap.([]interface{}) {
+		contactMap[v.(map[string]interface{})["userName"].(string)] = v.(map[string]interface{})
+	}
+	return contactMap, nil
 }
 
 func (w *WkteamApi) IsOnline(wId string) (isOnline bool, err error) {

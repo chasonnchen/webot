@@ -2,8 +2,10 @@ package wechat
 
 import (
 	"log"
+	"reflect"
 	"time"
 
+	"github.com/chasonnchen/webot/entity"
 	"github.com/chasonnchen/webot/lib/wkteam"
 )
 
@@ -12,9 +14,12 @@ var (
 )
 
 type Wechat struct {
-	WId       string
-	Options   WechatOptions
-	WkteamApi *wkteam.WkteamApi
+	WId         string
+	WcId        string
+	Options     WechatOptions
+	WkteamApi   *wkteam.WkteamApi
+	MsgHandler  *MsgHandler // 消息处理器
+	ContactList map[string]entity.ContactEntity
 }
 type WechatOptions struct {
 	Account  string // 平台登录手机号
@@ -22,7 +27,12 @@ type WechatOptions struct {
 	BaseUrl  string // 请求wkteam的域名信息
 	WcId     string // 要登录的微信的微信ID
 	AuthKey  string // 使用平台用户名密码获取到的authkey，请求后面接口时都需要带到header里面
+	Url      string // 消息回调URL，需要上报到wkteam，
+	Port     string // 本地起的gin server服务监听的端口
+	Uri      string // 接口URI
 }
+
+type MsgLogicFunc func(msg *Msg)
 
 func GetWechatInstance() *Wechat {
 	return wechatInstance
@@ -31,11 +41,37 @@ func GetWechatInstance() *Wechat {
 func NewWechat(options WechatOptions) *Wechat {
 	wechatInstance.Options = options
 	wechatInstance.WkteamApi = wkteam.NewWkteamApi(options.BaseUrl, options.AuthKey)
+	wechatInstance.MsgHandler = GetMsgHandler()
+	wechatInstance.WcId = options.WcId
 
 	return wechatInstance
 }
 
+func (w *Wechat) On(msgName MsgName, handler MsgLogicFunc) {
+	w.MsgHandler.On(msgName, func(data ...interface{}) {
+		values := make([]reflect.Value, 0, len(data))
+		for _, v := range data {
+			values = append(values, reflect.ValueOf(v))
+		}
+		_ = reflect.ValueOf(handler).Call(values)
+	})
+	return
+}
+
+func (w *Wechat) Handle(msgName MsgName, data interface{}) {
+	w.MsgHandler.Handle(msgName, data)
+	return
+}
+
 func (w *Wechat) Start() error {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("wechat start recover, err is %+v", err)
+		}
+	}()
+	// init gin server, gin run会阻塞，所以这里单独一个协程
+	go initServer(w.Options.Port, w.Options.Uri)
+
 	// check options参数，如果缺少authkey wcid 等，需要初始化
 	if w.Options.AuthKey == "" {
 		authKey, err := w.WkteamApi.GetAuthKey(w.Options.Account, w.Options.Password)
@@ -52,6 +88,9 @@ func (w *Wechat) Start() error {
 		return err
 	}
 	log.Printf("[%s]登录成功! wcId[%s], wId[%s], 显示账号[%s]", wxInfo["nickName"].(string), wxInfo["wcId"].(string), wxInfo["wId"].(string), wxInfo["wAccount"].(string))
+
+	// 设置接收消息地址
+	err = w.WkteamApi.SetMsgReciverUrl(w.Options.Url)
 
 	// 初始化通讯录
 	err = w.WkteamApi.InitAddressList(w.WId)
