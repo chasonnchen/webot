@@ -40,6 +40,9 @@ func main() {
 	wechatBot.On("60001", onMessage) // 私聊消息
 	wechatBot.On("80001", onMessage) // 群聊消息
 
+	wechatBot.On("85008", onRoomJoin) // 群变更消息
+	wechatBot.On("85009", onRoomJoin) // 群变更消息
+
 	// 4. 定时任务初始化
 	task.InitTask()
 
@@ -53,4 +56,7 @@ func main() {
 
 func onMessage(msg *wechat.Msg) {
 	logic.NewMessageLogic().Do(msg)
+}
+func onRoomJoin(msg *wechat.Msg) {
+	logic.NewRoomLogic().DoJoin(msg)
 }

@@ -129,11 +129,15 @@ func (w *WkteamApi) InitAddressList(wId string) error {
 	return err
 }
 
-func (w *WkteamApi) SendText(wId string, wcId string, content string) error {
+// at 注意传字符串
+func (w *WkteamApi) SendText(wId string, wcId string, content string, at string) error {
 	requestMap := map[string]interface{}{
 		"wId":     wId,
 		"wcId":    wcId,
 		"content": content,
+	}
+	if len(at) > 0 {
+		requestMap["at"] = at
 	}
 	_, err := w.doRequest("/sendText", requestMap)
 

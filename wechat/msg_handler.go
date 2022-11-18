@@ -36,7 +36,7 @@ func (m *MsgHandler) Handle(msgName MsgName, data interface{}) {
 	if ok {
 		handler(data) // 这里实际执行了处理过程
 	} else {
-		log.Print("msg has no handler,name is %s.", msgName)
+		log.Printf("msg has no handler,name is %s.", msgName)
 		return
 	}
 }

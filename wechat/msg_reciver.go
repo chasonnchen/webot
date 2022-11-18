@@ -43,7 +43,8 @@ type Data struct {
 func recive(ctx *gin.Context) {
 	msg := Msg{}
 	ctx.BindJSON(&msg)
-	// log.Printf("recive msg: %+v", &msg)
+	log.Printf("recive msg: %+v", &msg)
+
 	// 处理消息
 	go GetWechatInstance().Handle(MsgName(msg.MessageType), &msg)
 	ctx.JSON(http.StatusOK, Response{

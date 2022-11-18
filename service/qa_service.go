@@ -43,9 +43,9 @@ func (q *QaService) DoQa(contact entity.ContactEntity, message *wechat.Msg) {
 			if strings.Contains(message.Data.Content, keyword) {
 				if contact.Type == 2 {
 					//TODO 实现群里回答时，at的逻辑
-					NewContactService().SayTextToContact(contact.Id, strings.Trim(qaItem.QaValue, "\n"))
+					NewContactService().SayTextToContact(contact.Id, strings.Trim(qaItem.QaValue, "\n"), "")
 				} else {
-					NewContactService().SayTextToContact(contact.Id, strings.Trim(qaItem.QaValue, "\n"))
+					NewContactService().SayTextToContact(contact.Id, strings.Trim(qaItem.QaValue, "\n"), "")
 				}
 				log.Printf("Message response is %s", qaItem.QaValue)
 			}

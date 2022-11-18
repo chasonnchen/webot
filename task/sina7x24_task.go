@@ -53,8 +53,8 @@ func (s *Sina7x24Task) work() {
 
 	if len(msg) > 0 {
 		wk := wechat.GetWechatInstance()
-		wk.WkteamApi.SendText(wk.WId, "fenglinyexing", msg)
+		wk.WkteamApi.SendText(wk.WId, "fenglinyexing", msg, "")
 		time.Sleep(3 * time.Second)
-		wk.WkteamApi.SendText(wk.WId, "liuzhaoliang-1", msg)
+		wk.WkteamApi.SendText(wk.WId, "liuzhaoliang-1", msg, "")
 	}
 }

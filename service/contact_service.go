@@ -21,9 +21,9 @@ type ContactService struct {
 	ContactList map[string]entity.ContactEntity
 }
 
-func (c *ContactService) SayTextToContact(contactId string, msgText string) {
+func (c *ContactService) SayTextToContact(contactId string, msgText string, at string) {
 	bot := wechat.GetWechatInstance()
-	bot.WkteamApi.SendText(bot.WId, contactId, msgText)
+	bot.WkteamApi.SendText(bot.WId, contactId, msgText, at)
 }
 
 func (c *ContactService) GetById(contactId string) entity.ContactEntity {

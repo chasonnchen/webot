@@ -72,7 +72,7 @@ func (m *MessageLogic) Do(message *wechat.Msg) {
 		log.Print("start ai\n")
 		aiRes, _ := unit.NewClient().Chat(contact.Id, message.Data.Content)
 		if len(aiRes) > 1 {
-			service.NewContactService().SayTextToContact(contact.Id, aiRes)
+			service.NewContactService().SayTextToContact(contact.Id, aiRes, "")
 		}
 	}
 	// 5.2 群里聊天 && @机器人 && 文本消息 && 非群公告
