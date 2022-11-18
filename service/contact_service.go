@@ -103,6 +103,19 @@ func (c *ContactService) updateContacts(contacts []entity.ContactEntity) []entit
 }
 
 func (c *ContactService) init() {
+	c.load()
+
+	go func() {
+		for {
+			select {
+			case <-time.After(time.Second * 300):
+				c.load()
+			}
+		}
+	}()
+}
+
+func (c *ContactService) load() {
 	// 加载数据库中已保存的联系人
 	botId := wechat.GetWechatInstance().WcId
 	contactMap := make(map[string]entity.ContactEntity)
