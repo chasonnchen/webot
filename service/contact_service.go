@@ -34,14 +34,21 @@ func (c *ContactService) Upsert(contact entity.ContactEntity) entity.ContactEnti
 	//  先检查在不在List里
 	contactOri, ok := c.ContactList[contact.Id]
 	if ok {
-		// 更新逻辑
+		// TODO 更新逻辑
+		_, isUpdate := NewCacheService().Get(contactOri.Id + "_update")
+		if isUpdate {
+		} else {
+			contactOri = c.updateContacts([]entity.ContactEntity{contactOri})[0]
+			log.Printf("upsert contact to db, %+v", contactOri)
+			dao.Wechat().Model(&contactOri).Update("name", contactOri.Name)
+			NewCacheService().Set(contactOri.Id+"_update", 1, 2*time.Minute)
+		}
 	} else {
 		// 插入
 		contact.BotId = wechat.GetWechatInstance().WcId
+		contact = c.updateContacts([]entity.ContactEntity{contact})[0]
+		log.Printf("insert contact to db, %+v", contact)
 		dao.Wechat().Create(&contact)
-
-		c.updateContacts([]entity.ContactEntity{contact})
-		dao.Wechat().Where("id = ?", contact.Id).Take(&contact)
 		c.ContactList[contact.Id] = contact
 		contactOri = contact
 	}
@@ -49,14 +56,14 @@ func (c *ContactService) Upsert(contact entity.ContactEntity) entity.ContactEnti
 	return contactOri
 }
 
-func (c *ContactService) updateContacts(contacts []entity.ContactEntity) {
-	ids := make([]string, len(contacts))
+func (c *ContactService) updateContacts(contacts []entity.ContactEntity) []entity.ContactEntity {
+	contactMapOri := make(map[string]entity.ContactEntity)
+	ids := make([]string, 0)
 	for _, contact := range contacts {
 		ids = append(ids, contact.Id)
+		contactMapOri[contact.Id] = contact
 	}
-
-	newContactList := make([]entity.ContactEntity, len(contacts))
-
+	newContactList := make([]entity.ContactEntity, 0)
 	for {
 		if ids == nil {
 			break
@@ -78,19 +85,13 @@ func (c *ContactService) updateContacts(contacts []entity.ContactEntity) {
 
 		// append
 		for _, contact := range contactMap {
-			newContact := entity.ContactEntity{
-				Id:   contact.(map[string]interface{})["userName"].(string),
-				Name: "",
-			}
+			newContact := contactMapOri[contact.(map[string]interface{})["userName"].(string)]
+
 			if contact.(map[string]interface{})["nickName"] != nil {
 				newContact.Name = contact.(map[string]interface{})["nickName"].(string)
 			}
 			if contact.(map[string]interface{})["remark"] != nil {
 				newContact.Name = contact.(map[string]interface{})["remark"].(string)
-			}
-			// 更新下DB
-			if len(newContact.Name) > 0 {
-				dao.Wechat().Model(&newContact).Update("name", newContact.Name)
 			}
 			newContactList = append(newContactList, newContact)
 		}
@@ -98,8 +99,7 @@ func (c *ContactService) updateContacts(contacts []entity.ContactEntity) {
 		// sleet
 		time.Sleep(1 * time.Second)
 	}
-
-	return
+	return newContactList
 }
 
 func (c *ContactService) init() {
@@ -107,12 +107,6 @@ func (c *ContactService) init() {
 	botId := wechat.GetWechatInstance().WcId
 	contactMap := make(map[string]entity.ContactEntity)
 	var contactList []entity.ContactEntity
-	dao.Wechat().Where("bot_id = ?", botId).Find(&contactList)
-
-	// 更新一下最新信息
-	c.updateContacts(contactList)
-
-	// 重新查一次
 	dao.Wechat().Where("bot_id = ?", botId).Find(&contactList)
 
 	for _, contact := range contactList {

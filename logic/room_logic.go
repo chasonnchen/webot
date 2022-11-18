@@ -71,7 +71,7 @@ func (r *RoomLogic) DoJoin(msg *wechat.Msg) {
 		}
 	}
 	atStr := ""
-	idlist := make([]string, len(mlist))
+	idlist := make([]string, 0)
 	for _, m := range mlist {
 		atStr += "@" + m.Nickname.Value + string(rune(8197))
 		idlist = append(idlist, m.Username.Value)
