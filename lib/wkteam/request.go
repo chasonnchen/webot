@@ -53,7 +53,7 @@ func (h *HttpClient) PostJson(url string, data interface{}, options PostOptions)
 	// TODO cookie
 
 	client := &http.Client{
-		Timeout: 5 * time.Second,
+		Timeout: 30 * time.Second,
 		Transport: &http.Transport{
 			MaxIdleConns:       100,
 			IdleConnTimeout:    10 * time.Second,

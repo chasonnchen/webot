@@ -17,6 +17,7 @@ func InitService() {
 	NewGroupService().init()
 	NewContactService().init()
 	NewQaService().init()
+	NewCpsService().init()
 	// NewForwardService().init()
 	// NewForwardMediaService().init()
 	// NewRoomService().init()

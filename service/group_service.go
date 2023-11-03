@@ -32,6 +32,19 @@ func (g *GroupService) GetContactIdListByGroupId(groupId int32) []string {
 	return contactIdList
 }
 
+func (g *GroupService) HasContact(groupId int32, contactId string) bool {
+	relationList, ok := g.GroupRelatinMap[groupId]
+	if ok {
+		for _, relation := range relationList {
+			if contactId == relation.ContactId {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func (g *GroupService) init() {
 	g.load()
 

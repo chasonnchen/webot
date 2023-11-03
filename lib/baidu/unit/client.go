@@ -61,11 +61,11 @@ type UnitRespose struct {
 
 // 下面开始是request相关结构体
 type UnitRequest struct {
-	Version   string   `json:"version"`
-	ServiceId string   `json:"service_id"`
-	LogId     string   `json:"log_id"`
-	SessionId string   `json:"session_id"`
-	Request   *Request `json:"request"`
+	Version   string  `json:"version"`
+	ServiceId string  `json:"service_id"`
+	LogId     string  `json:"log_id"`
+	SessionId string  `json:"session_id"`
+	Request   Request `json:"request"`
 }
 
 type Request struct {
@@ -113,7 +113,7 @@ func (c *Client) Chat(contactId string, query string) (say string, err error) {
 		ServiceId: "S58199",
 		LogId:     c.genLogId(contactId),
 		SessionId: session.SessionId,
-		Request: &Request{
+		Request: Request{
 			TerminalId: contactId,
 			Query:      query,
 		},

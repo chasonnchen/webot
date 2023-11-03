@@ -41,7 +41,7 @@ func (c *ContactService) Upsert(contact entity.ContactEntity) entity.ContactEnti
 			contactOri = c.updateContacts([]entity.ContactEntity{contactOri})[0]
 			log.Printf("upsert contact to db, %+v", contactOri)
 			dao.Wechat().Model(&contactOri).Update("name", contactOri.Name)
-			NewCacheService().Set(contactOri.Id+"_update", 1, 2*time.Minute)
+			NewCacheService().Set(contactOri.Id+"_update", 1, 30*time.Minute)
 		}
 	} else {
 		// 插入
@@ -81,7 +81,10 @@ func (c *ContactService) updateContacts(contacts []entity.ContactEntity) []entit
 
 		// get
 		bot := wechat.GetWechatInstance()
-		contactMap, _ := bot.WkteamApi.GetContact(bot.WId, idList)
+		contactMap, err := bot.WkteamApi.GetContact(bot.WId, idList)
+		if err != nil {
+			return contacts
+		}
 
 		// append
 		for _, contact := range contactMap {
@@ -90,7 +93,7 @@ func (c *ContactService) updateContacts(contacts []entity.ContactEntity) []entit
 			if contact.(map[string]interface{})["nickName"] != nil {
 				newContact.Name = contact.(map[string]interface{})["nickName"].(string)
 			}
-			if contact.(map[string]interface{})["remark"] != nil {
+			if contact.(map[string]interface{})["remark"] != nil && len(contact.(map[string]interface{})["remark"].(string)) > 0 {
 				newContact.Name = contact.(map[string]interface{})["remark"].(string)
 			}
 			newContactList = append(newContactList, newContact)

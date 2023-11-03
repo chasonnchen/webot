@@ -28,7 +28,7 @@ type MessageLogic struct {
 func (m *MessageLogic) buildContact(message *wechat.Msg) entity.ContactEntity {
 	contact := entity.ContactEntity{}
 
-	if message.MessageType == "80001" {
+	if message.MessageType == "80001" || message.MessageType == "80010" || message.MessageType == "80007" {
 		contact.Id = message.Data.FromGroup
 		contact.Type = 2
 		contact.Status = 1
@@ -55,6 +55,12 @@ func (m *MessageLogic) Do(message *wechat.Msg) {
 	contact := m.buildContact(message)
 	// 1. 更新联系人
 	contact = service.NewContactService().Upsert(contact)
+
+	err := service.NewCpsService().DoCps(contact, message)
+	// 如果处理的CPS，后面的就不要再进行了
+	if err == nil {
+		return
+	}
 
 	// 2. 问答
 	service.NewQaService().DoQa(contact, message)

@@ -99,6 +99,8 @@ func (w *Wechat) Start() error {
 		return err
 	}
 
+	// 持续更新通信录 暂定30min
+
 	return nil
 }
 

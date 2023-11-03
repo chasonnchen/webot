@@ -3,7 +3,7 @@ package task
 import (
 	"log"
 	"strconv"
-	"strings"
+	//"strings"
 	"time"
 
 	"github.com/chasonnchen/webot/lib/sina7x24"
@@ -45,10 +45,10 @@ func (s *Sina7x24Task) work() {
 	timeStr, _ := strconv.Atoi(time.Now().Format(layout))
 	if timeStr > 2230 || timeStr < 830 {
 		//if timeStr > 10000 {
-		if !strings.Contains(msg, "俄") && !strings.Contains(msg, "乌") {
-			log.Println("It is not good time")
-			return
-		}
+		//if !strings.Contains(msg, "俄") && !strings.Contains(msg, "乌") {
+		log.Println("It is not good time")
+		return
+		//}
 	}
 
 	if len(msg) > 0 {
@@ -56,5 +56,9 @@ func (s *Sina7x24Task) work() {
 		wk.WkteamApi.SendText(wk.WId, "fenglinyexing", msg, "")
 		time.Sleep(3 * time.Second)
 		wk.WkteamApi.SendText(wk.WId, "liuzhaoliang-1", msg, "")
+		time.Sleep(3 * time.Second)
+		wk.WkteamApi.SendText(wk.WId, "pww932589183", msg, "")
+		time.Sleep(3 * time.Second)
+		wk.WkteamApi.SendText(wk.WId, "jaytudediaozha", msg, "")
 	}
 }

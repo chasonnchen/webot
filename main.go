@@ -39,6 +39,10 @@ func main() {
 	// 事件ID参考 http://www.wkteam.cn/api-wen-dang2/xiao-xi-jie-shou/shou-xiao-xi/callback.html
 	wechatBot.On("60001", onMessage) // 私聊消息
 	wechatBot.On("80001", onMessage) // 群聊消息
+	wechatBot.On("60010", onMessage) // 私聊小程序消息
+	wechatBot.On("80010", onMessage) // 群聊小程序消息
+	wechatBot.On("60007", onMessage) // 私聊h5消息
+	wechatBot.On("80007", onMessage) // 群聊h5消息
 
 	wechatBot.On("85008", onRoomJoin) // 群变更消息
 	wechatBot.On("85009", onRoomJoin) // 群变更消息

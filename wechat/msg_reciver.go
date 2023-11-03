@@ -3,6 +3,7 @@ package wechat
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -44,6 +45,12 @@ func recive(ctx *gin.Context) {
 	msg := Msg{}
 	ctx.BindJSON(&msg)
 	log.Printf("recive msg: %+v", &msg)
+	// 过期消息过滤
+	nowTs := time.Now().Unix()
+	if nowTs-msg.Data.Timestamp > 10 {
+		log.Print("old msg.")
+		return
+	}
 
 	// 处理消息
 	go GetWechatInstance().Handle(MsgName(msg.MessageType), &msg)
